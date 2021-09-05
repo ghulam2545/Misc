@@ -1,86 +1,14 @@
 #include "Large_Num.h"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 
-namespace num {
-
-std::vector<int> num::_convert_in_array(std::string &__input) {
-    std::vector<int> __temp;
-    _size_of_input = __input.size();
-    for (int i = 0; i < _size_of_input; i++) {
-        __temp.push_back(__input[i] - '0');
-    }
-    return __temp;
-}
-
-std::string num::add(std::string &__num1, std::string &__num2) {
-    _num1_ = _convert_in_array(__num1);
-    _num2_ = _convert_in_array(__num2);
-    _size_of_num1 = _num1_.size();
-    _size_of_num2 = _num2_.size();
-
-    int __remainder = 0;
-    while (!(_num1_.empty() || _num2_.empty())) {
-        int __a = _num1_.back();
-        _num1_.pop_back();
-        int __b = _num2_.back();
-        _num2_.pop_back();
-        int __data = __a + __b + __remainder;
-        __remainder = 0;
-
-        __ans.push_back(__data % 10);
-        __remainder = __data / 10;
-    }
-
-    // If both have same number there may be a last remainder
-    if (_size_of_num1 == _size_of_num2) {
-        if (__remainder) {
-            __ans.push_back(__remainder);
-        }
-    } else {
-        if (__remainder) {
-            if (_size_of_num1 > _size_of_num2) {
-                for (int i = (_size_of_num1 - _size_of_num2 - 1); i >= 0; i--) {
-                    __ans.push_back(_num1_[i] + __remainder);
-                    __remainder = 0;
-                }
-            } else {
-                for (int i = (_size_of_num2 - _size_of_num1 - 1); i >= 0; i--) {
-                    __ans.push_back(_num2_[i] + __remainder);
-                    __remainder = 0;
-                }
-            }
-        } else {
-            if (_size_of_num1 > _size_of_num2) {
-                for (int i = (_size_of_num1 - _size_of_num2 - 1); i >= 0; i--) {
-                    __ans.push_back(_num1_[i]);
-                }
-            } else {
-                for (int i = (_size_of_num2 - _size_of_num1 - 1); i >= 0; i--) {
-                    __ans.push_back(_num2_[i]);
-                }
-            }
-        }
-    }
-
-    for (int e = __ans.size() - 1; e >= 0; e--) {
-        __result += std::to_string(__ans[e]);
-    }
-
-    return __result;
-}
-
-std::string num::substract(std::string &__num1, std::string &__num2) {
-    // Has to imp
-    return "abc";
-}
-
-std::string num::max(std::string &__num1, std::string &__num2) {
+namespace number {
+std::string number::max(std::string& __num1, std::string& __num2) {
+    __result = "";
     _size_of_num1 = __num1.size();
     _size_of_num2 = __num2.size();
-
-    std::cout << _size_of_num1 << "\n" << _size_of_num2 << "\n\n";
 
     bool _boht_are_same = true;
     bool _num1_is_greater = false;
@@ -100,7 +28,6 @@ std::string num::max(std::string &__num1, std::string &__num2) {
         return __result;
     } else {
         // both has same length
-
         for (int i = 0; i < _size_of_num1; i++) {
             if (__num1[i] - '0' > __num2[i] - '0') {
                 _num1_is_greater = true;
@@ -127,9 +54,115 @@ std::string num::max(std::string &__num1, std::string &__num2) {
     }
 }
 
-std::string num::min(std::string &__num1, std::string &__num2) {
-    // has to imp
-    return "abc";
+std::string number::min(std::string& __num1, std::string& __num2) {
+    __result = "";
+    std::string __s = max(__num1, __num2);
+    __result = "";
+    if (__s == "Both are same") {
+        return "Both are same";
+    } else if (__s == __num1) {
+        return __num2;
+    } else {
+        return __num1;
+    }
 }
 
-}  // namespace num
+std::string number::add(std::string& __num1, std::string& __num2) {
+    __result = "";
+    _size_of_num1 = __num1.size();
+    _size_of_num2 = __num2.size();
+
+    int __carry = 0;
+    while (!(__num1.empty() || __num2.empty())) {
+        int __a = __num1.back() - '0';
+        __num1.pop_back();
+        int __b = __num2.back() - '0';
+        __num2.pop_back();
+        int __data = __a + __b + __carry;
+        __carry = 0;
+
+        __result.push_back(__data % 10 + '0');
+        __carry = __data / 10;
+    }
+
+    // If both have same lenth there may be a last carry
+    if (_size_of_num1 == _size_of_num2) {
+        if (__carry) {
+            __result.push_back(__carry + '0');
+        }
+    } else {  // both are diff length
+        if (__carry) {
+            if (_size_of_num1 > _size_of_num2) {
+                for (int i = (_size_of_num1 - _size_of_num2 - 1); i >= 0; i--) {
+                    __result.push_back((__num1[i] - '0') + (__carry + '0'));
+                    __carry = 0;
+                }
+            } else {
+                for (int i = (_size_of_num2 - _size_of_num1 - 1); i >= 0; i--) {
+                    __result.push_back((__num2[i] - '0') + (__carry + '0'));
+                    __carry = 0;
+                }
+            }
+        } else {
+            if (_size_of_num1 > _size_of_num2) {
+                for (int i = (_size_of_num1 - _size_of_num2 - 1); i >= 0; i--) {
+                    __result.push_back(__num1[i]);
+                }
+            } else {
+                for (int i = (_size_of_num2 - _size_of_num1 - 1); i >= 0; i--) {
+                    __result.push_back(__num2[i]);
+                }
+            }
+        }
+    }
+
+    reverse(__result.begin(), __result.end());
+
+    return __result;
+}
+
+std::string number::substract(std::string& __num1, std::string& __num2) {
+    std::cout << __num1 << "  " << __num2 << "\n\n";
+    return "done";
+
+    /*
+    std::string __max_val = max(__num1, __num2);
+    std::string __min_val = min(__num1, __num2);
+    if (__max_val == __min_val) {
+        return "0";
+    }
+    // _size_of_num1 = __num1.size();
+    // _size_of_num2 = __num2.size();
+
+    int diff = _size_of_num1 - _size_of_num2;
+    int __carry = 0;
+    for (int i = _size_of_num2 - 1; i >= 0; i--) {
+        int __sub = ((__num1[i + diff] - '0') - (__num2[i] - '0') - __carry);
+        if (__sub < 0) {
+            __sub += 10;
+            __carry = 1;
+        } else {
+            __carry = 0;
+        }
+        __result.push_back(__sub + '0');
+    }
+    for (int i = _size_of_num1 - _size_of_num2 - 1; i >= 0; i--) {
+        if (__num1[i] == '0' && __carry) {
+            __result.push_back('9');
+            continue;
+        }
+        int __sub = ((__num1[i] - '0') - __carry);
+        if (i > 0 || __sub > 0) {
+            __result.push_back(__sub + '0');
+        }
+        __carry = 0;
+    }
+
+    reverse(__result.begin(), __result.end());
+
+    return __result;
+
+    */
+}
+
+}  // namespace number

@@ -2,37 +2,39 @@
 #define LARGE_NUM_H
 
 #include <string>
-#include <vector>
 
-namespace num {
-static int _size_of_input;
+namespace number {
 
-static std::vector<int> _num1_;
-static std::vector<int> _num2_;
-static int _size_of_num1;
-static int _size_of_num2;
+struct member {
+    int _size_of_num1;
+    int _size_of_num2;
+    std::string __result;
+};
 
-static std::vector<int> __ans;
-static std::string __result = "";
+struct number : public member {
+    // making members as their default value
+    number() {
+        _size_of_num1 = 0;
+        _size_of_num2 = 0;
+        __result = "";
+    }
 
-class num {
-   private:
-   public:
-    // Convert string to array of interger
-    static std::vector<int> _convert_in_array(std::string& __input);
+    // returns max value of both number
+    std::string max(std::string& __num1, std::string& __num2);
+
+    // returns min value of both number
+    std::string min(std::string& __num1, std::string& __num2);
 
     // for adding
-    static std::string add(std::string& __num1, std::string& __num2);
+    std::string add(std::string& __num1, std::string& __num2);
 
     // for substracting
-    static std::string substract(std::string& __num1, std::string& __num2);
+    std::string substract(std::string& __num1, std::string& __num2);
 
-    // returns max val
-    static std::string max(std::string& __num1, std::string& __num2);
-
-    // returns min val
-    static std::string min(std::string& __num1, std::string& __num2);
+    // for multiplying
+    // std::string multiply(std::string& __num1, std::string& __num2);
 };
-}  // namespace num
+
+}  // namespace number
 
 #endif
