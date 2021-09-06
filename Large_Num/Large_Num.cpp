@@ -5,6 +5,13 @@
 #include <string>
 
 namespace number {
+
+number::number() {
+    _size_of_num1 = 0;
+    _size_of_num2 = 0;
+    __result = "";
+}
+
 std::string number::max(std::string& __num1, std::string& __num2) {
     __result = "";
     _size_of_num1 = __num1.size();
@@ -67,6 +74,7 @@ std::string number::min(std::string& __num1, std::string& __num2) {
     }
 }
 
+// Alert : This also erased the input data.
 std::string number::add(std::string& __num1, std::string& __num2) {
     __result = "";
     _size_of_num1 = __num1.size();
@@ -122,47 +130,42 @@ std::string number::add(std::string& __num1, std::string& __num2) {
 }
 
 std::string number::substract(std::string& __num1, std::string& __num2) {
-    std::cout << __num1 << "  " << __num2 << "\n\n";
-    return "done";
-
-    /*
-    std::string __max_val = max(__num1, __num2);
-    std::string __min_val = min(__num1, __num2);
-    if (__max_val == __min_val) {
-        return "0";
-    }
-    // _size_of_num1 = __num1.size();
-    // _size_of_num2 = __num2.size();
-
+    __result = "";
     int diff = _size_of_num1 - _size_of_num2;
-    int __carry = 0;
-    for (int i = _size_of_num2 - 1; i >= 0; i--) {
-        int __sub = ((__num1[i + diff] - '0') - (__num2[i] - '0') - __carry);
-        if (__sub < 0) {
-            __sub += 10;
-            __carry = 1;
-        } else {
-            __carry = 0;
-        }
-        __result.push_back(__sub + '0');
+    for (int i = 0; i < diff; i++) {
+        __num2 = "0" + __num2;
     }
-    for (int i = _size_of_num1 - _size_of_num2 - 1; i >= 0; i--) {
-        if (__num1[i] == '0' && __carry) {
-            __result.push_back('9');
-            continue;
+    std::string tt = compliment_of_10(__num2);
+    __result = add(__num1, tt);
+    if (__result.size() > __num1.size()) {
+        auto it = __result.begin();
+        __result.erase(it);
+        it = __result.begin();
+        while (*it == '0') {
+            __result.erase(it);
         }
-        int __sub = ((__num1[i] - '0') - __carry);
-        if (i > 0 || __sub > 0) {
-            __result.push_back(__sub + '0');
-        }
-        __carry = 0;
+        return __result;
+    } else {
+        return compliment_of_10(__result);
     }
+}
 
-    reverse(__result.begin(), __result.end());
+std::string number::multiply(std::string& __num1, std::string& __num2) {
+    return "abc";
+}
 
-    return __result;
+std::string number::divide(std::string& __num1, std::string& __num2) {
+    return "abc";
+}
 
-    */
+std::string number::compliment_of_10(std::string& __input) {
+    std::string __ans = "";
+    for (int i = 0; i < __input.size(); i++) {
+        __ans += '9' - __input[i] + '0';
+    }
+    std::string tt = "1";
+    __ans = add(__ans, tt);
+    return __ans;
 }
 
 }  // namespace number

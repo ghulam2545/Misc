@@ -13,11 +13,7 @@ struct member {
 
 struct number : public member {
     // making members as their default value
-    number() {
-        _size_of_num1 = 0;
-        _size_of_num2 = 0;
-        __result = "";
-    }
+    number();
 
     // returns max value of both number
     std::string max(std::string& __num1, std::string& __num2);
@@ -32,7 +28,13 @@ struct number : public member {
     std::string substract(std::string& __num1, std::string& __num2);
 
     // for multiplying
-    // std::string multiply(std::string& __num1, std::string& __num2);
+    std::string multiply(std::string& __num1, std::string& __num2);
+
+    // for dividing
+    std::string divide(std::string& __num1, std::string& __num2);
+
+    // Some helper methods
+    std::string compliment_of_10(std::string& __input);
 };
 
 }  // namespace number
