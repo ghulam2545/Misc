@@ -11,13 +11,17 @@ int main() {
     std::string b = "12345334233242431432";
     number::number aa;
 
-    std::cout << aa.max(a, b) << "\n\n";
+    // std::cout << aa.max(a, b) << "\n\n";
 
-    std::cout << aa.min(a, b) << "\n\n";
+    // std::cout << aa.min(a, b) << "\n\n";
 
     // std::cout << aa.add(a, b) << "\n\n";
 
-    std::cout << aa.substract(a, b) << "\n\n";
+    // std::cout << aa.substract(a, b) << "\n\n";
+
+    a = "000";
+    b = "23123231";
+    std::cout << aa.multiply(a, b);
 
     return EXIT_SUCCESS;
 }

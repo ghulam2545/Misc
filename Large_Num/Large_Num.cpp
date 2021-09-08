@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 namespace number {
 
@@ -75,7 +76,7 @@ std::string number::min(std::string& __num1, std::string& __num2) {
 }
 
 // Alert : This also erased the input data.
-std::string number::add(std::string& __num1, std::string& __num2) {
+std::string number::add(std::string __num1, std::string __num2) {
     __result = "";
     _size_of_num1 = __num1.size();
     _size_of_num2 = __num2.size();
@@ -151,7 +152,39 @@ std::string number::substract(std::string& __num1, std::string& __num2) {
 }
 
 std::string number::multiply(std::string& __num1, std::string& __num2) {
-    return "abc";
+    __result = "";
+    // considering all are zero
+    bool n1_zeros = true;
+    bool n2_zeros = true;
+    for (int i = 0; i < __num1.size(); i++) {
+        if (__num1[i] != '0') {
+            n1_zeros = false;
+        }
+    }
+    for (int i = 0; i < __num2.size(); i++) {
+        if (__num2[i] != '0') {
+            n2_zeros = false;
+        }
+    }
+    if (n1_zeros == true || n2_zeros == true) {
+        return "0";
+    }
+
+    _size_of_num2 = __num2.size();
+    std::string _append_ = "0";
+    std::string toPass = "";
+    toPass.push_back(__num2.back());
+    std::string __ans = mult(__num1, toPass);
+    std::string __temp_ans = "";
+    for (int i = _size_of_num2 - 2; i >= 0; i--) {
+        toPass = __num2[i];
+        __temp_ans = mult(__num1, toPass);
+        __temp_ans += _append_;
+        _append_ += "0";
+        __ans = add(__ans, __temp_ans);
+    }
+
+    return __ans;
 }
 
 std::string number::divide(std::string& __num1, std::string& __num2) {
@@ -166,6 +199,25 @@ std::string number::compliment_of_10(std::string& __input) {
     std::string tt = "1";
     __ans = add(__ans, tt);
     return __ans;
+}
+
+std::string number::mult(std::string __num1, std::string __num2) {
+    __result = "";
+    if (__num2[0] - '0' == 0) return "0";
+    int __carry = 0;
+    int temp;
+    for (int i = __num1.size() - 1; i >= 0; i--) {
+        temp = ((__num2[0] - '0') * (__num1[i] - '0')) + __carry;
+        __carry = 0;
+        __result.push_back((temp % 10) + '0');
+        __carry = temp / 10;
+    }
+    if (__carry) {
+        __result.push_back(__carry + '0');
+    }
+
+    reverse(__result.begin(), __result.end());
+    return __result;
 }
 
 }  // namespace number

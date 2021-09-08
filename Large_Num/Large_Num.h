@@ -22,7 +22,7 @@ struct number : public member {
     std::string min(std::string& __num1, std::string& __num2);
 
     // for adding
-    std::string add(std::string& __num1, std::string& __num2);
+    std::string add(std::string __num1, std::string __num2);
 
     // for substracting
     std::string substract(std::string& __num1, std::string& __num2);
@@ -35,6 +35,7 @@ struct number : public member {
 
     // Some helper methods
     std::string compliment_of_10(std::string& __input);
+    std::string mult(std::string __num1, std::string __num2);
 };
 
 }  // namespace number
