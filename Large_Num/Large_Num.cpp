@@ -11,6 +11,8 @@ number::number() {
     _size_of_num1 = 0;
     _size_of_num2 = 0;
     __result = "";
+    bool __num1_is_positive = true;
+    bool __num2_is_positive = true;
 }
 
 std::string number::max(std::string& __num1, std::string& __num2) {
@@ -187,8 +189,21 @@ std::string number::multiply(std::string& __num1, std::string& __num2) {
     return __ans;
 }
 
-std::string number::divide(std::string& __num1, std::string& __num2) {
-    return "abc";
+std::string number::divide(std::string& __num1, long long& __num2) {
+    __result = "";
+    int index = 0;
+    int temp = __num1[index] - '0';
+    while (temp < __num2) {
+        temp = temp * 10 + (__num1[++index] - '0');
+    }
+    while (__num1.size() > index) {
+        __result += (temp / __num2) + '0';
+        temp = (temp % __num2) * 10 + __num1[++index] - '0';
+    }
+    if (__result.length() == 0)
+        return "0";
+    else
+        return __result;
 }
 
 std::string number::compliment_of_10(std::string& __input) {
@@ -201,7 +216,7 @@ std::string number::compliment_of_10(std::string& __input) {
     return __ans;
 }
 
-std::string number::mult(std::string __num1, std::string __num2) {
+std::string number::mult(std::string& __num1, std::string& __num2) {
     __result = "";
     if (__num2[0] - '0' == 0) return "0";
     int __carry = 0;
@@ -218,6 +233,10 @@ std::string number::mult(std::string __num1, std::string __num2) {
 
     reverse(__result.begin(), __result.end());
     return __result;
+}
+
+void action_1(std::string __num1, std::string __num2, std::string method) {
+    // Has to implement
 }
 
 }  // namespace number
