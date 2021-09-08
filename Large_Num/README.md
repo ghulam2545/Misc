@@ -6,7 +6,7 @@ There are 3 files.
 2. Large_Num.h  (declarion of all function)
 3. Large_Num.cpp (implementation of all function)
 
--- How to instantiate and call
+-- <b>How to instantiate and call</b>
 
 number::number instance_name;
 
