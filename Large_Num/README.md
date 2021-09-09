@@ -1,4 +1,5 @@
 # Large Number in C++
+<i>This is a mini library to deal with very large number in c++. Since standered type can store max value in uint64_t rather than all will go overflow.This one is written very straight forward to do basic arithmetic on large number.</i>
 
 ## Details    ----------(*do more improvement)
 There are 3 files.
