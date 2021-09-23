@@ -1,7 +1,9 @@
 #ifndef STRING_EXT_H
 #define STRING_EXT_H
 
+#include <cstring>
 #include <iostream>
+#include <vector>
 
 namespace String_Ext {
 
@@ -12,7 +14,16 @@ const std::string trim(const std::string &s);
 std::string indent(std::string linesIn, size_t spaces);
 
 // colon indent (":" as new line terminator)
-std::string colonIndent(std::string &s);
+const std::string colonIndent(const std::string &s);
+
+// convert complete sentence in vector<string>
+const std::vector<std::string> split(const std::string &s);
+
+// transform string in lowercase
+const std::string lower(const std::string &s);
+
+// transform string in uppercase
+const std::string upper(const std::string &s);
 
 }  // namespace String_Ext
 

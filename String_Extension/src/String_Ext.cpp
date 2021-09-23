@@ -1,6 +1,9 @@
 #include "../include/String_Ext.h"
 
+#include <cstring>
 #include <iostream>
+#include <vector>
+
 namespace String_Ext {
 const std::string trim(const std::string &s) {
     size_t i = 0;
@@ -14,27 +17,27 @@ const std::string trim(const std::string &s) {
     return s.substr(i, j - i);
 }
 
-std::string indent(std::string linesIn, size_t spaces) {
-    std::string linesOut;
-    while (!linesIn.empty()) {
+std::string indent(std::string linesInput, size_t spaces) {
+    std::string linesOutput;
+    while (!linesInput.empty()) {
         std::string line;
-        auto position = linesIn.find("\n");  // no further "\n"
-        if (position == std::string::npos) {
-            line = linesIn;
-            linesIn.clear();
+        auto position = linesInput.find("\n");
+        if (position == std::string::npos) {  // no further "\n"
+            line = linesInput;
+            linesInput.clear();
         } else {
-            line = linesIn.substr(0, position + 1);
-            linesIn = linesIn.substr(position + 1);
+            line = linesInput.substr(0, position + 1);
+            linesInput = linesInput.substr(position + 1);
         }
-        if (!linesOut.empty()) {  // working for indent except first line
-            linesOut.append(spaces, ' ');
+        if (!linesOutput.empty()) {  // working for indent except first line
+            linesOutput.append(spaces, ' ');
         }
-        linesOut += line;
+        linesOutput += line;
     }
-    return linesOut;
+    return linesOutput;
 }
 
-std::string colonIndent(std::string &s) {
+const std::string colonIndent(const std::string &s) {
     std::string out;
     size_t spaces = 4;
     bool colon = false;
@@ -58,6 +61,36 @@ std::string colonIndent(std::string &s) {
         }
     }
     return out;
+}
+
+const std::vector<std::string> split(const std::string &s) {
+    std::vector<std::string> ans;
+    std::string temp;
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (s[i] != ' ') {
+            temp += s[i];
+        } else {
+            ans.push_back(temp);
+            temp = "";
+        }
+    }
+    return ans;
+}
+
+const std::string lower(const std::string &s) {
+    std::string ans;
+    for (auto &e : s) {
+        ans += tolower(e);
+    }
+    return ans;
+}
+
+const std::string upper(const std::string &s) {
+    std::string ans;
+    for (auto &e : s) {
+        ans += toupper(e);
+    }
+    return ans;
 }
 
 }  // namespace String_Ext
