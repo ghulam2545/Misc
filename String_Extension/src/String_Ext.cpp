@@ -63,11 +63,11 @@ const std::string colonIndent(const std::string &s) {
     return out;
 }
 
-const std::vector<std::string> split(const std::string &s) {
+const std::vector<std::string> split(const std::string &s, const char &ch) {
     std::vector<std::string> ans;
     std::string temp;
     for (size_t i = 0; i < s.size(); ++i) {
-        if (s[i] != ' ') {
+        if (s[i] != ch) {
             temp += s[i];
         } else {
             ans.push_back(temp);
@@ -89,6 +89,24 @@ const std::string upper(const std::string &s) {
     std::string ans;
     for (auto &e : s) {
         ans += toupper(e);
+    }
+    return ans;
+}
+
+const std::string join(const std::vector<std::string> &s, const char &ch) {
+    std::string ans;
+    for (auto &e : s) {
+        ans += e;
+        ans += ch;
+    }
+    return ans;
+}
+
+const std::string join(const std::vector<std::string> &s, const std::string &delimiterStr) {
+    std::string ans;
+    for (auto &e : s) {
+        ans += e;
+        ans += delimiterStr;
     }
     return ans;
 }

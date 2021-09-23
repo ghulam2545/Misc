@@ -4,9 +4,15 @@
 #include "include/String_Ext.h"
 
 int main() {
-    std::string s = "uniVersity";
-    std::cout << String_Ext::lower(s) << "\n\n";
-    std::cout << String_Ext::upper(s) << "\n";
+    std::string ans = "an333sWEr";
+    std::cout << String_Ext::lower(ans) << "\n";
+    std::cout << String_Ext::upper(ans);
+
+    // std::vector<std::string> aa = {"nadeem", "saleem", "karee", "jameel"};
+    // std::string de = " bhai\n";
+    // std::cout << String_Ext::join(aa, de);
+    // std::vector<std::string> aa = {"manuu", "is", "a", "central", "university"};
+    // std::cout << String_Ext::join(aa, 'X');
 
     // std::ifstream in("test.txt");
     // if (!in) {
