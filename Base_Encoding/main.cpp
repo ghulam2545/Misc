@@ -1,14 +1,20 @@
+#include <bitset>
+#include <fstream>
+#include <ios>
 #include <iostream>
 
+#include "include/Base2.h"
 #include "include/Base64.h"
 
 int main() {
-    std::string name = "these all are very usefull";
+    // simultenous call not working...WHY
 
-    std::string ans = Base64::Encode(name);
-    std::cout << ans << "\n";
-    ans = Base64::Decode(ans);
-    std::cout << ans << "\n";
+    // char ch = 'Z';
+    // std::bitset<8> ans = Base2::Encode(ch);
+    // std::cout << ans << "\n";
+    std::string s = "kingdom is very huge";
+    // Base2::Encode(std::vector<uint8_t>(s.begin(), s.end()));
+    Base2::Encode(s);
 
     return EXIT_SUCCESS;
 }
