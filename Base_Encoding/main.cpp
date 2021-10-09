@@ -7,14 +7,22 @@
 #include "include/Base64.h"
 
 int main() {
-    // simultenous call not working...WHY
+    char ch = (char)12;
+    std::vector<char> v{'a', 'b', 'c'};
+    std::string ss = "Lord";
+    std::string ans;
 
-    // char ch = 'Z';
-    // std::bitset<8> ans = Base2::Encode(ch);
-    // std::cout << ans << "\n";
-    std::string s = "kingdom is very huge";
-    // Base2::Encode(std::vector<uint8_t>(s.begin(), s.end()));
-    Base2::Encode(s);
+    ans = Base2::Encode(ch);
+    Base2::EncodeInFile(ch);
+    std::cout << ans << "\n";
+
+    ans = Base2::Encode(v);
+    Base2::EncodeInFile(v);
+    std::cout << ans << "\n";
+
+    ans = Base2::Encode(ss);
+    Base2::EncodeInFile(ss);
+    std::cout << ans << "\n";
 
     return EXIT_SUCCESS;
 }

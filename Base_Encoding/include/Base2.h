@@ -6,31 +6,58 @@
 #include <vector>
 
 namespace Base2 {
+
     /**
-     * @brief this function is used to convert data to binary form
+     * @brief this function is used to convert data into binary form
      *
      * @param[in] data the data that has to be convert
      *
-     * @return converted data is retured in the form of binary
+     * @return converted data in the form of binary is returned
      */
-    std::bitset<8> Encode(const uint8_t &data);
+    std::string Encode(const char& data);
 
     /**
-     * @brief this function is used to convert data to binary form
+     * @brief this function is used to convert data into binary form and writes that in a file
+     *
+     * @param[in] data the data that has to be convert
+     *
+     */
+    void EncodeInFile(const char& data);
+
+    /**
+     * @brief this function is used to convert data into binary form
+     *
+     * @param[in] data the data that has to be convert
+     *
+     * @return converted data in the form of binary is returned
+     */
+    std::string Encode(const std::vector<char>& data);
+
+    /**
+     * @brief this function is used to convert data into binary form and writes that in a file
+     *
+     * @param[in] data the data that has to be convert
+     *
+     */
+    void EncodeInFile(const std::vector<char>& data);
+
+    /**
+     * @brief this function is used to convert data into binary form
+     *
+     * @param[in] data the data that has to be convert
+     *
+     * @return converted data in the form of binary is returned
+     *
+     */
+    std::string Encode(const std::string& data);
+
+    /**
+     * @brief this function is used to convert data to binary form and writes that in a file
      *
      * @param[in] data the data that has to be convert
      */
-    void Encode(const std::vector<uint8_t> &data);
+    void EncodeInFile(const std::string& data);
 
-    /**
-     * @brief this function is used to convert data to binary form
-     *
-     * @param[in] data the data that has to be convert
-     */
-    void Encode(const std::string &data);
-
-    // helper
-    void clearFile();
 }  // namespace Base2
 
 #endif
