@@ -1,0 +1,1 @@
+g++ main.cpp utf8/utf8.cpp utf8/utf8.hpp 
