@@ -52,6 +52,19 @@ struct matrix_slice {
     matrix_slice() = default;
 
     matrix_slice(size_t s, std::initializer_list<size_t> exts);
+    matrix_slice(size_t s, std::initializer_list<size_t> exts, std::initializer_list<size_t> strs);
+
+    template <typename... dims>
+    matrix_slice(dims... _dims);
+
+    // true = All(Convertible<dims, size_t>()...)
+    template <typename... dims, typename = std::enable_if<true>>
+    const size_t operator()(dims... _dims);
+
+    size_t size;
+    size_t start;
+    std::array<size_t, N> extents;
+    std::array<size_t, N> strides;
 };
 
 template <typename T, size_t N>
@@ -186,3 +199,17 @@ matrix<T, N>::matrix(matrix_initializer<T, N> init) {
     matrix_impl::insert_flat(init, elems);
     assert(elems.size() == desc.size);
 }
+
+//
+
+//
+
+//
+// template <size_t N>
+// template <typename... dims>
+// const size_t matrix_slice<N>::operator()(dims... _dims) {
+//     static_assert(sizeof...(dims) == N, "");
+// }
+// template <size_t N>
+// template <typename... dims, typename = std::enable_if<true>>
+// const size_t matrix_slice<N>::operator()(dims... _dims) {}
