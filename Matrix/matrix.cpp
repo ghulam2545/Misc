@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <iostream>
+#include <numeric>
 #include <type_traits>
 #include <vector>
 
@@ -58,13 +59,28 @@ struct matrix_slice {
     matrix_slice(dims... _dims);
 
     // true = All(Convertible<dims, size_t>()...)
+    // some issue
     template <typename... dims, typename = std::enable_if<true>>
-    const size_t operator()(dims... _dims);
+    const size_t operator()(dims... _dims) {
+        static_assert(sizeof...(dims) == N, "");
+        size_t args[N]{size_t(_dims)...};
+        return std::inner_product(args, args + N, strides.begin(), size_t(0));
+    }
 
     size_t size;
     size_t start;
     std::array<size_t, N> extents;
     std::array<size_t, N> strides;
+};
+
+template <typename T, size_t N>
+class matrix_ref {
+   public:
+    matrix_ref(const matrix_slice<N>& s, T* p) : desc(s), ptr(p) {}
+    // most likely matrix
+   private:
+    matrix_slice<N> desc;
+    T* ptr;
 };
 
 template <typename T, size_t N>
@@ -211,5 +227,7 @@ matrix<T, N>::matrix(matrix_initializer<T, N> init) {
 //     static_assert(sizeof...(dims) == N, "");
 // }
 // template <size_t N>
+// template <typename... dims, typename = std::enable_if<true>>
+// const size_t matrix_slice<N>::operator()(dims... _dims) {}
 // template <typename... dims, typename = std::enable_if<true>>
 // const size_t matrix_slice<N>::operator()(dims... _dims) {}
