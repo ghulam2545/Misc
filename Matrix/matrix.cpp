@@ -48,6 +48,18 @@ void add_list(const std::initializer_list<T>* first, const std::initializer_list
 template <typename T, typename Vec>
 void add_list(const T* first, const T* last, Vec& vec);
 
+constexpr bool All() { return true; }
+template <typename... args>
+constexpr bool All(bool b, args... _args) {
+    return b && All(_args...);
+}
+
+template <typename... args>
+constexpr bool requesting_element();
+
+template <typename... args>
+constexpr bool requesting_slice();
+
 }  // namespace matrix_impl
 
 // class for slicing stuff
@@ -132,7 +144,26 @@ class matrix {
     const matrix_slice<N> descriptor();  //  the slice defining subscripting
     T* data();                           // "flat" element access
 
-    //  ...more
+    template <typename... args>
+    std::enable_if<matrix_impl::requesting_element<args..>(), T&> operator()(args... _args);
+    template <typename... args>
+    std::enable_if<matrix_impl::requesting_element<args..>(), const T&> operator()(args... _args) const;
+
+    template <typename... args>
+    std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<T, N>> operator()(const args&... _args);
+    template <typename... args>
+    std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<const T, N>> operator()(const args&... _args) const;
+
+    matrix_ref<T, N - 1> operator[](size_t i);
+    matrix_ref<const T, N - 1> operator[](size_t i) const;  // m[i] row access
+
+    matrix_ref<T, N - 1> row(size_t n);
+    matrix_ref<const T, N - 1> row(size_t n) const;  // row access
+
+    matrix_ref<T, N - 1> col(size_t n);
+    matrix_ref<const T, N - 1> col(size_t n) const;  // column access
+
+    // more...
 
    private:
     matrix_slice<N> desc;  //  slice defining extents in the N dimensions
@@ -205,6 +236,16 @@ void insert_flat(std::initializer_list<T> list, Vec& vec) {
     add_list(list.begin(), list.end(), vec);
 }
 
+template <typename... args>
+constexpr bool requesting_element() {
+    return matrix_impl::All(std::is_convertible<args, size_t>()...);
+}
+
+template <typename... args>
+constexpr bool requesting_slice() {
+    // return All((std::is_convertible<args, size_t>() || Same<args, slice>())...) && Some(Same<args, slice>()...);
+}
+
 //
 
 //
@@ -235,5 +276,77 @@ void insert_flat(std::initializer_list<T> list, Vec& vec) {
 
 // definition for main matrix members
 template <typename T, size_t N>
+template <typename U>
+matrix<T, N>::matrix(const matrix_ref<U, N>& x) : desc(x.desc), elems{x.begin(), x.end()} {
+    static_assert(std::is_convertible<U, T>(), "Matrix constructor : incompatible elements type");
+}
+
+template <typename T, size_t N>
+template <typename U>
+matrix<T, N>& matrix<T, N>::operator=(const matrix_ref<U, N>& x) {
+    static_assert(std::is_convertible<U, T>(), "Matrix : incompatible elements type");
+    desc = x.desc;
+    elems.assign(x.begin(), x.end());
+    return *this;
+}
+
+template <typename T, size_t N>
 template <typename... exts>
 matrix<T, N>::matrix(exts... _exts) : desc(_exts...), elems(desc.size) {}
+
+template <typename T, size_t N>
+matrix_ref<T, N - 1> matrix<T, N>::operator[](size_t i) {
+    return row(i);
+}
+
+template <typename T, size_t N>
+matrix_ref<const T, N - 1> matrix<T, N>::operator[](size_t i) const {
+    return row(i);
+}
+
+template <typename T, size_t N>
+matrix_ref<T, N - 1> matrix<T, N>::row(size_t n) {
+    assert(n < row());
+    matrix_slice<N - 1> row;
+    // matrix_impl::slice_dim<0>(n, desc, row);
+    return {row, data()};
+}
+
+// this specilization for row
+// template <typename T>
+// T& matrix<T, 1>::row(size_t n) {
+//     return &elems[n];
+// }
+
+// template <typename T>
+// T& matrix<T, 0>::row(size_t n) = delete;
+
+template <typename T, size_t N>
+matrix_ref<const T, N - 1> matrix<T, N>::row(size_t n) const {
+    assert(n < row());
+    matrix_slice<N - 1> row;
+    // matrix_impl::slice_dim<0>(n, desc, row);
+    return {row, data()};
+}
+
+template <typename T, size_t N>
+matrix_ref<T, N - 1> matrix<T, N>::col(size_t n) {
+    assert(n < col());
+    matrix_slice<N - 1> col;
+    // matrix_impl::slice_dim<1>(n, desc, col);
+    return {col, data()};
+}
+
+/*
+
+specilization for col
+
+*/
+
+template <typename T, size_t N>
+matrix_ref<const T, N - 1> matrix<T, N>::col(size_t n) const {
+    assert(n < col());
+    matrix_slice<N - 1> col;
+    // matrix_impl::slice_dim<0>(n, desc, col);
+    return {col, data()};
+}
