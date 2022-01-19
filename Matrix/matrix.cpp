@@ -7,22 +7,26 @@
 #include <type_traits>
 #include <vector>
 
+// global namespace for common stuff
 namespace matrix_impl {
 
+// initializer list for nth order matrix
 template <typename T, size_t N>
 struct matrix_init {
     using type = std::initializer_list<typename matrix_init<T, N - 1>::type>;
 };
 
+// initializer list for 1th order matrix
 template <typename T>
 struct matrix_init<T, 1> {
     using type = std::initializer_list<T>;
 };
 
+// initializer list for 0th order matrix
 template <typename T>
 struct matrix_init<T, 0>;
 
-// members
+// helper member
 template <size_t N, typename List>
 std::array<size_t, N> derive_extents(const List& list);
 
@@ -43,20 +47,20 @@ void add_list(const std::initializer_list<T>* first, const std::initializer_list
 
 template <typename T, typename Vec>
 void add_list(const T* first, const T* last, Vec& vec);
+
 }  // namespace matrix_impl
 
-template <typename T, size_t N>
-using matrix_initializer = typename matrix_impl::matrix_init<T, N>::type;
-
+// class for slicing stuff
 template <size_t N>
-struct matrix_slice {
-    matrix_slice() = default;
+class matrix_slice {
+   public:
+    matrix_slice() = default;  // an empty matrix
 
-    matrix_slice(size_t s, std::initializer_list<size_t> exts);
-    matrix_slice(size_t s, std::initializer_list<size_t> exts, std::initializer_list<size_t> strs);
+    matrix_slice(size_t s, std::initializer_list<size_t> exts);                                      // extents
+    matrix_slice(size_t s, std::initializer_list<size_t> exts, std::initializer_list<size_t> strs);  // extents and stride
 
     template <typename... dims>
-    matrix_slice(dims... _dims);
+    matrix_slice(dims... _dims);  // for N extents
 
     // true = All(Convertible<dims, size_t>()...)
     // some issue
@@ -67,12 +71,15 @@ struct matrix_slice {
         return std::inner_product(args, args + N, strides.begin(), size_t(0));
     }
 
-    size_t size;
-    size_t start;
-    std::array<size_t, N> extents;
-    std::array<size_t, N> strides;
+    size_t size;                    // total number of elems
+    size_t start;                   // starting offset
+    std::array<size_t, N> extents;  // number of elems in each dimension
+    std::array<size_t, N> strides;  // offset between in each dimension
+
+   private:
 };
 
+// class for reference stuff
 template <typename T, size_t N>
 class matrix_ref {
    public:
@@ -81,33 +88,36 @@ class matrix_ref {
    private:
     matrix_slice<N> desc;
     T* ptr;
+
+   private:
 };
 
+// main matrix class
 template <typename T, size_t N>
 class matrix {
    public:
-    static constexpr size_t order = N;
+    static constexpr size_t m_order = N;
     using value_type = T;
     using iterator = typename std::vector<T>::iterator;
-    using const_iterator = typename std::vector<T>::const_itrerator;
+    using const_iterator = typename std::vector<T>::const_iterator;
 
-    matrix() = default;
-    matrix(matrix&&) = default;
-    matrix(matrix const&) = default;
-    matrix& operator=(matrix&&) = default;
-    matrix& operator=(matrix const&) = default;
-    ~matrix() = default;
+    matrix() = default;                          // default constructor
+    matrix(matrix&&) = default;                  // move constructor
+    matrix& operator=(matrix&&) = default;       // move assignment
+    matrix(matrix const&) = default;             // copy constructor
+    matrix& operator=(matrix const&) = default;  // copy assignment
+    ~matrix() = default;                         // default destructor
 
-    // template <typename U>
-    // matrix(const matrix_ref<U, N>&);
+    template <typename U>
+    matrix(const matrix_ref<U, N>&);  // contruct from matrix_ref
 
-    // template <typename U>
-    // matrix& operator=(const matrix_ref<U, N>&);
+    template <typename U>
+    matrix& operator=(const matrix_ref<U, N>&);  // assign from matrix_ref
 
     template <typename... exts>
-    explicit matrix(exts... _exts);
+    explicit matrix(exts... _exts);  // specify the extents
 
-    matrix(matrix_initializer<T, N>);
+    // matrix(matrix_initializer<T, N>);
     // matrix& operator=(matrx_initializer<T, N>);
 
     // template <typename U>
@@ -116,64 +126,52 @@ class matrix {
     // template <typename U>
     // matrix& operator=(initializer_list<U>) = delete;
 
-    // static constexpr size_t order();
-    // const size_t extent(size_t n);
-    // const size_t size();
-
-    // const matrix_slice<T> descriptor();
-
-    // T* data();
-    // const T* data();
+    static constexpr size_t order();     // dimension of matrix
+    const size_t extent(size_t n);       // element in nth dimension
+    const size_t size();                 // size of matrix (row*col)
+    const matrix_slice<N> descriptor();  //  the slice defining subscripting
+    T* data();                           // "flat" element access
 
     //  ...more
 
    private:
-    matrix_slice<N> desc;
-    std::vector<T> elems;
+    matrix_slice<N> desc;  //  slice defining extents in the N dimensions
+    std::vector<T> elems;  // elements of matrix
 };
 
-int main() { return 0; }
-/*
-struct slice {
-    slice();
-    explicit slice(size_t s);
-    slice(size_t s, size_t l, size_t n = 1);
+int main() {
+    matrix<int, 3> example;
 
-    const size_t operator(size_t i);
+    return 0;
+}
 
-    static slice all;
-
-    size_t start;
-    size_t length;
-    size_t stride;
-};
-*/
-
-//
-
-//
-
-//
-
-//
+// for matrix elems initialization
 template <typename T, size_t N>
-template <typename... exts>
-matrix<T, N>::matrix(exts... _exts) : desc(_exts...), elems(desc.size) {}
+using matrix_initializer = typename matrix_impl::matrix_init<T, N>::type;
 
+//
+
+//
+
+//
+
+//
+
+// definition for namespace members
 template <size_t N, typename I, typename List>
-std::enable_if<(N > 1), void> matrix_impl::add_extents(I& first, List& list) {
+std::enable_if<(N > 1), void> add_extents(I& first, List& list) {
     assert(check_non_jagged(list));
     *first = list.size();
     add_extents<N - 1>(++first, *list.begin());
 }
 
 template <size_t N, typename I, typename List>
-std::enable_if<(N == 1), void> matrix_impl::add_extents(I& first, List& list) {
+std::enable_if<(N == 1), void> add_extents(I& first, List& list) {
     *first++ = list.begin();
 }
 
 template <typename List>
-bool matrix_impl::check_non_jagged(const List& list) {
+bool check_non_jagged(const List& list) {
     auto i = list.begin();
     for (auto j = i + 1; j != list.end(); ++j) {
         if (i->size() != j->size()) {
@@ -184,19 +182,18 @@ bool matrix_impl::check_non_jagged(const List& list) {
 }
 
 template <typename T, typename Vec>
-void matrix_impl::add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec) {
+void add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec) {
     for (; first != last; ++first) {
         add_list(first->begin, first->end, vec);
     }
 }
-
 template <typename T, typename Vec>
-void matrix_impl::add_list(const T* first, const T* last, Vec& vec) {
+void add_list(const T* first, const T* last, Vec& vec) {
     vec.insert(vec.end(), first.last());
 }
 
 template <size_t N, typename List>
-std::array<size_t, N> matrix_impl::derive_extents(const List& list) {
+std::array<size_t, N> derive_extents(const List& list) {
     std::array<size_t, N> a;
     auto f = a.begin();
     add_extents<N>(f, list);
@@ -204,30 +201,39 @@ std::array<size_t, N> matrix_impl::derive_extents(const List& list) {
 }
 
 template <typename T, typename Vec>
-void matrix_impl::insert_flat(std::initializer_list<T> list, Vec& vec) {
+void insert_flat(std::initializer_list<T> list, Vec& vec) {
     add_list(list.begin(), list.end(), vec);
 }
 
+//
+
+//
+
+//
+
+//
+
+// definition for matrix slice members
+
+//
+
+//
+
+//
+
+//
+
+// definition for matrix ref members
+
+//
+
+//
+
+//
+
+//
+
+// definition for main matrix members
 template <typename T, size_t N>
-matrix<T, N>::matrix(matrix_initializer<T, N> init) {
-    matrix_impl::derive_extents(init, desc.extents);
-    elems.reserve(desc.size);
-    matrix_impl::insert_flat(init, elems);
-    assert(elems.size() == desc.size);
-}
-
-//
-
-//
-
-//
-// template <size_t N>
-// template <typename... dims>
-// const size_t matrix_slice<N>::operator()(dims... _dims) {
-//     static_assert(sizeof...(dims) == N, "");
-// }
-// template <size_t N>
-// template <typename... dims, typename = std::enable_if<true>>
-// const size_t matrix_slice<N>::operator()(dims... _dims) {}
-// template <typename... dims, typename = std::enable_if<true>>
-// const size_t matrix_slice<N>::operator()(dims... _dims) {}
+template <typename... exts>
+matrix<T, N>::matrix(exts... _exts) : desc(_exts...), elems(desc.size) {}
