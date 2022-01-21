@@ -1,68 +1,86 @@
 #include <array>
 #include <cassert>
-#include <cstdint>
-#include <initializer_list>
 #include <iostream>
 #include <numeric>
 #include <type_traits>
 #include <vector>
 
-// global namespace for common stuff
-namespace matrix_impl {
-
-// initializer list for nth order matrix
-template <typename T, size_t N>
-struct matrix_init {
-    using type = std::initializer_list<typename matrix_init<T, N - 1>::type>;
-};
-
-// initializer list for 1th order matrix
-template <typename T>
-struct matrix_init<T, 1> {
-    using type = std::initializer_list<T>;
-};
-
-// initializer list for 0th order matrix
-template <typename T>
-struct matrix_init<T, 0>;
-
-// helper member
-template <size_t N, typename List>
-std::array<size_t, N> derive_extents(const List& list);
-
-template <typename T, typename Vec>
-void insert_flat(std::initializer_list<T> list, Vec& vec);
-
-template <size_t N, typename I, typename List>
-std::enable_if<(N > 1), void> add_extents(I& first, List& list);
-
-template <size_t N, typename I, typename List>
-std::enable_if<(N == 1), void> add_extents(I& first, List& list);
-
-template <typename List>
-bool check_non_jagged(const List& list);
-
-template <typename T, typename Vec>
-void add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec);
-
-template <typename T, typename Vec>
-void add_list(const T* first, const T* last, Vec& vec);
+template <bool B, typename T = void>
+using Enable_if = typename std::enable_if<B, T>::type;
 
 constexpr bool All() { return true; }
+
 template <typename... args>
 constexpr bool All(bool b, args... _args) {
     return b && All(_args...);
 }
 
-template <typename... args>
-constexpr bool requesting_element();
+template <typename X, typename Y>
+constexpr bool Convertible() {
+    return std::is_convertible<X, Y>::value;
+}
 
-template <typename... args>
-constexpr bool requesting_slice();
+// This is globally available namespace for common working
+namespace matrix_impl {
+
+    // constructing initializer list for nth order matrix
+    template <typename T, size_t N>
+    struct matrix_init {
+        using type = std::initializer_list<typename matrix_init<T, N - 1>::type>;
+    };
+
+    // constructing initializer list for 1th order matrix
+    template <typename T>
+    struct matrix_init<T, 1> {
+        using type = std::initializer_list<T>;
+    };
+
+    // for 0th order matrix (undefined behaviour)
+    template <typename T>
+    struct matrix_init<T, 0>;
+
+    // Helper members
+    /*
+     * derive_extents() determines the shape of the Matrix:
+     * Checks that the tree really is N deep
+     * Checks that each row (sub-initialize_list) has the same number of elements
+     * Sets the extent of each row
+     */
+    template <size_t N, typename List>
+    std::array<size_t, N> derive_extents(const List& list);
+
+    // insert_flat() copies the elements of the tree of initializer_list<T>s into the elems of a Matrix
+    template <typename T, typename Vec>
+    void insert_flat(std::initializer_list<T> list, Vec& vec);
+
+    template <size_t N, typename I, typename List>
+    Enable_if<(N > 1), void> add_extents(I& first, List& list);
+
+    template <size_t N, typename I, typename List>
+    Enable_if<(N == 1), void> add_extents(I& first, List& list);
+
+    template <size_t N, typename List>
+    bool check_non_jagged(const List& list);
+
+    template <typename T, typename Vec>
+    void add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec);
+
+    template <typename T, typename Vec>
+    void add_list(const T* first, const T* last, Vec& vec);
+
+    template <typename... args>
+    constexpr bool requesting_element();
+
+    template <typename... args>
+    constexpr bool requesting_slice();
 
 }  // namespace matrix_impl
 
-// class for slicing stuff
+// for matrix elems initialization
+template <typename T, size_t N>
+using matrix_initializer = typename matrix_impl::matrix_init<T, N>::type;
+
+// class for slicing purpose
 template <size_t N>
 class matrix_slice {
    public:
@@ -74,9 +92,7 @@ class matrix_slice {
     template <typename... dims>
     matrix_slice(dims... _dims);  // for N extents
 
-    // true = All(Convertible<dims, size_t>()...)
-    // some issue
-    template <typename... dims, typename = std::enable_if<true>>
+    template <typename... dims, typename = Enable_if<All(Convertible<dims, size_t>()...)>>
     const size_t operator()(dims... _dims) {
         static_assert(sizeof...(dims) == N, "");
         size_t args[N]{size_t(_dims)...};
@@ -91,7 +107,7 @@ class matrix_slice {
    private:
 };
 
-// class for reference stuff
+// class for referencing purpose
 template <typename T, size_t N>
 class matrix_ref {
    public:
@@ -104,7 +120,7 @@ class matrix_ref {
    private:
 };
 
-// main matrix class
+// This is main matrix class
 template <typename T, size_t N>
 class matrix {
    public:
@@ -129,21 +145,23 @@ class matrix {
     template <typename... exts>
     explicit matrix(exts... _exts);  // specify the extents
 
-    // matrix(matrix_initializer<T, N>);
-    // matrix& operator=(matrx_initializer<T, N>);
+    matrix(matrix_initializer<T, N>);             // initialize from list
+    matrix& operator=(matrix_initializer<T, N>);  // assign from list
 
-    // template <typename U>
-    // matrix(initializer_list<U>) = delete;
-
-    // template <typename U>
-    // matrix& operator=(initializer_list<U>) = delete;
+    // don't use {} except for elements
+    template <typename U>
+    matrix(std::initializer_list<U>) = delete;
+    template <typename U>
+    matrix& operator=(std::initializer_list<U>) = delete;
 
     static constexpr size_t order();     // dimension of matrix
     const size_t extent(size_t n);       // element in nth dimension
     const size_t size();                 // size of matrix (row*col)
     const matrix_slice<N> descriptor();  //  the slice defining subscripting
     T* data();                           // "flat" element access
+    // const T* data();
 
+    /*
     template <typename... args>
     std::enable_if<matrix_impl::requesting_element<args..>(), T&> operator()(args... _args);
     template <typename... args>
@@ -153,7 +171,7 @@ class matrix {
     std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<T, N>> operator()(const args&... _args);
     template <typename... args>
     std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<const T, N>> operator()(const args&... _args) const;
-
+    */
     matrix_ref<T, N - 1> operator[](size_t i);
     matrix_ref<const T, N - 1> operator[](size_t i) const;  // m[i] row access
 
@@ -171,60 +189,21 @@ class matrix {
 };
 
 int main() {
-    matrix<int, 3> example;
+    matrix<int, 2> example;
 
     return 0;
 }
 
-// for matrix elems initialization
-template <typename T, size_t N>
-using matrix_initializer = typename matrix_impl::matrix_init<T, N>::type;
-
 //
 
 //
 
 //
 
-//
-
-// definition for namespace members
-template <size_t N, typename I, typename List>
-std::enable_if<(N > 1), void> add_extents(I& first, List& list) {
-    assert(check_non_jagged(list));
-    *first = list.size();
-    add_extents<N - 1>(++first, *list.begin());
-}
-
-template <size_t N, typename I, typename List>
-std::enable_if<(N == 1), void> add_extents(I& first, List& list) {
-    *first++ = list.begin();
-}
-
-template <typename List>
-bool check_non_jagged(const List& list) {
-    auto i = list.begin();
-    for (auto j = i + 1; j != list.end(); ++j) {
-        if (i->size() != j->size()) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template <typename T, typename Vec>
-void add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec) {
-    for (; first != last; ++first) {
-        add_list(first->begin, first->end, vec);
-    }
-}
-template <typename T, typename Vec>
-void add_list(const T* first, const T* last, Vec& vec) {
-    vec.insert(vec.end(), first.last());
-}
+// definition for namespace member goes here
 
 template <size_t N, typename List>
-std::array<size_t, N> derive_extents(const List& list) {
+std::array<size_t, N> matrix_impl::derive_extents(const List& list) {
     std::array<size_t, N> a;
     auto f = a.begin();
     add_extents<N>(f, list);
@@ -232,18 +211,42 @@ std::array<size_t, N> derive_extents(const List& list) {
 }
 
 template <typename T, typename Vec>
-void insert_flat(std::initializer_list<T> list, Vec& vec) {
+void matrix_impl::insert_flat(std::initializer_list<T> list, Vec& vec) {
     add_list(list.begin(), list.end(), vec);
 }
 
-template <typename... args>
-constexpr bool requesting_element() {
-    return matrix_impl::All(std::is_convertible<args, size_t>()...);
+template <size_t N, typename I, typename List>
+Enable_if<(N > 1), void> matrix_impl::add_extents(I& first, List& list) {
+    // there might be some issue (add_extents())
+    assert(check_non_jagged(list));
+    *first = list.size();
+    add_extents<N - 1>(++first, *list.begin());
 }
 
-template <typename... args>
-constexpr bool requesting_slice() {
-    // return All((std::is_convertible<args, size_t>() || Same<args, slice>())...) && Some(Same<args, slice>()...);
+template <size_t N, typename I, typename List>
+Enable_if<(N == 1), void> matrix_impl::add_extents(I& first, List& list) {
+    *first++ = list.size();  // 1.
+}
+
+template <size_t N, typename List>
+bool matrix_impl::check_non_jagged(const List& list) {
+    auto i = list.begin();
+    for (auto j = i + 1; j != list.end(); ++j) {
+        if (derive_extents<N - 1>(*i) != derive_extents<N - 1>(*j)) return false;
+    }
+    return true;
+}
+
+template <typename T, typename Vec>
+void matrix_impl::add_list(const std::initializer_list<T>* first, const std::initializer_list<T>* last, Vec& vec) {
+    for (; first != last; ++first) {
+        add_list(first->begin(), first->end(), vec);
+    }
+}
+
+template <typename T, typename Vec>
+void matrix_impl::add_list(const T* first, const T* last, Vec& vec) {
+    vec.insert(vec.end(), first, last);
 }
 
 //
@@ -252,9 +255,7 @@ constexpr bool requesting_slice() {
 
 //
 
-//
-
-// definition for matrix slice members
+// definition for matrix slice member goes here
 
 //
 
@@ -262,9 +263,7 @@ constexpr bool requesting_slice() {
 
 //
 
-//
-
-// definition for matrix ref members
+// definition for matrix ref member goes here
 
 //
 
@@ -272,81 +271,25 @@ constexpr bool requesting_slice() {
 
 //
 
-//
+// definition for main matrix member goes here
 
-// definition for main matrix members
 template <typename T, size_t N>
 template <typename U>
 matrix<T, N>::matrix(const matrix_ref<U, N>& x) : desc(x.desc), elems{x.begin(), x.end()} {
-    static_assert(std::is_convertible<U, T>(), "Matrix constructor : incompatible elements type");
+    static_assert(Convertible<U, T>(), "Matrix constructor : incompatible elements type");
 }
 
 template <typename T, size_t N>
 template <typename U>
 matrix<T, N>& matrix<T, N>::operator=(const matrix_ref<U, N>& x) {
-    static_assert(std::is_convertible<U, T>(), "Matrix : incompatible elements type");
+    static_assert(Convertible<U, T>(), "Matrix : incompatible elements type");
     desc = x.desc;
     elems.assign(x.begin(), x.end());
     return *this;
 }
 
+// TODO :
 template <typename T, size_t N>
-template <typename... exts>
-matrix<T, N>::matrix(exts... _exts) : desc(_exts...), elems(desc.size) {}
-
+matrix<T, N>::matrix(matrix_initializer<T, N>) {}
 template <typename T, size_t N>
-matrix_ref<T, N - 1> matrix<T, N>::operator[](size_t i) {
-    return row(i);
-}
-
-template <typename T, size_t N>
-matrix_ref<const T, N - 1> matrix<T, N>::operator[](size_t i) const {
-    return row(i);
-}
-
-template <typename T, size_t N>
-matrix_ref<T, N - 1> matrix<T, N>::row(size_t n) {
-    assert(n < row());
-    matrix_slice<N - 1> row;
-    // matrix_impl::slice_dim<0>(n, desc, row);
-    return {row, data()};
-}
-
-// this specilization for row
-// template <typename T>
-// T& matrix<T, 1>::row(size_t n) {
-//     return &elems[n];
-// }
-
-// template <typename T>
-// T& matrix<T, 0>::row(size_t n) = delete;
-
-template <typename T, size_t N>
-matrix_ref<const T, N - 1> matrix<T, N>::row(size_t n) const {
-    assert(n < row());
-    matrix_slice<N - 1> row;
-    // matrix_impl::slice_dim<0>(n, desc, row);
-    return {row, data()};
-}
-
-template <typename T, size_t N>
-matrix_ref<T, N - 1> matrix<T, N>::col(size_t n) {
-    assert(n < col());
-    matrix_slice<N - 1> col;
-    // matrix_impl::slice_dim<1>(n, desc, col);
-    return {col, data()};
-}
-
-/*
-
-specilization for col
-
-*/
-
-template <typename T, size_t N>
-matrix_ref<const T, N - 1> matrix<T, N>::col(size_t n) const {
-    assert(n < col());
-    matrix_slice<N - 1> col;
-    // matrix_impl::slice_dim<0>(n, desc, col);
-    return {col, data()};
-}
+matrix<T, N>& matrix<T, N>::operator=(matrix_initializer<T, N>) {}
