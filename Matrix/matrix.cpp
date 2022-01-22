@@ -1,5 +1,9 @@
+// FAILED :::::
+
+#include <algorithm>
 #include <array>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <numeric>
 #include <type_traits>
@@ -19,6 +23,9 @@ template <typename X, typename Y>
 constexpr bool Convertible() {
     return std::is_convertible<X, Y>::value;
 }
+
+template <size_t N>
+class matrix_slice;
 
 // This is globally available namespace for common working
 namespace matrix_impl {
@@ -67,6 +74,9 @@ namespace matrix_impl {
 
     template <typename T, typename Vec>
     void add_list(const T* first, const T* last, Vec& vec);
+
+    template <size_t N, typename... dims>
+    bool check_bounds(const matrix_slice<N>& slice, dims... _dims);
 
     template <typename... args>
     constexpr bool requesting_element();
@@ -161,17 +171,16 @@ class matrix {
     T* data();                           // "flat" element access
     // const T* data();
 
-    /*
     template <typename... args>
-    std::enable_if<matrix_impl::requesting_element<args..>(), T&> operator()(args... _args);
+    Enable_if<matrix_impl::requesting_element<args...>(), T&> operator()(args... _args);
     template <typename... args>
-    std::enable_if<matrix_impl::requesting_element<args..>(), const T&> operator()(args... _args) const;
+    Enable_if<matrix_impl::requesting_element<args...>(), const T&> operator()(args... _args) const;
 
-    template <typename... args>
-    std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<T, N>> operator()(const args&... _args);
-    template <typename... args>
-    std::enable_if<matrix_impl::requesting_slice<args..>(), matrix_ref<const T, N>> operator()(const args&... _args) const;
-    */
+    // template <typename... args>
+    // Enable_if<matrix_impl::requesting_slice<args...>(), matrix_ref<T, N>> operator()(const args&... _args);
+    // template <typename... args>
+    // Enable_if<matrix_impl::requesting_slice<args...>(), matrix_ref<const T, N>> operator()(const args&... _args) const;
+
     matrix_ref<T, N - 1> operator[](size_t i);
     matrix_ref<const T, N - 1> operator[](size_t i) const;  // m[i] row access
 
@@ -249,6 +258,11 @@ void matrix_impl::add_list(const T* first, const T* last, Vec& vec) {
     vec.insert(vec.end(), first, last);
 }
 
+template <size_t N, typename... dims>
+bool matrix_impl::check_bounds(const matrix_slice<N>& slice, dims... _dims) {
+    size_t indexes[N]{size_t(_dims)...};
+    return std::equal(indexes, indexes + N, slice.extents, std::less<size_t>{});
+}
 //
 
 //
@@ -288,8 +302,37 @@ matrix<T, N>& matrix<T, N>::operator=(const matrix_ref<U, N>& x) {
     return *this;
 }
 
-// TODO :
 template <typename T, size_t N>
-matrix<T, N>::matrix(matrix_initializer<T, N>) {}
+matrix<T, N>::matrix(matrix_initializer<T, N> init) {
+    // ....
+    matrix_impl::derive_extents(init, desc.extents());
+    elems.reserve(elems.size());
+    matrix_impl::insert_flat(init, elems);
+    assert(elems.size() == desc.size());
+}
+
 template <typename T, size_t N>
-matrix<T, N>& matrix<T, N>::operator=(matrix_initializer<T, N>) {}
+matrix<T, N>& matrix<T, N>::operator=(matrix_initializer<T, N> init) {
+    // ....
+    matrix_impl::derive_extents(init, desc.extents());
+    elems.reserve(elems.size());
+    matrix_impl::insert_flat(init, elems);
+    assert(elems.size() == desc.size());
+    return *this;
+}
+
+template <typename T, size_t N>
+template <typename... args>
+Enable_if<matrix_impl::requesting_element<args...>(), T&> matrix<T, N>::operator()(args... _args) {
+    //  ....
+    assert(matrix_impl::check_bounds(desc, _args...));
+    return *(data() + desc(_args...));
+}
+
+template <typename T, size_t N>
+template <typename... args>
+Enable_if<matrix_impl::requesting_element<args...>(), const T&> matrix<T, N>::operator()(args... _args) const {
+    //  ....
+    assert(matrix_impl::check_bounds(desc, _args...));
+    return *(data() + desc(_args...));
+}
