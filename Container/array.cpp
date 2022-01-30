@@ -1,8 +1,10 @@
+#include <cstddef>
+#include <initializer_list>
 #include <iostream>
 #include <iterator>
 
 namespace Container {
-    template <class _T, size_t _S>
+    template <class _T, std::size_t _S>
     class Array {
        public:
         class Iterator {
@@ -18,7 +20,6 @@ namespace Container {
             constexpr reference operator*() { return *m_ptr; }
             constexpr pointer operator->() { return m_ptr; }
 
-            // ...
             constexpr Iterator& operator++() {
                 ++m_ptr;
                 return *this;
@@ -37,6 +38,7 @@ namespace Container {
                 m_ptr--;
                 return _temp;
             }
+
             constexpr bool operator<(const Iterator& _other) { return this->m_ptr < _other.m_ptr; }
             constexpr bool operator<=(const Iterator& _other) { return this->m_ptr <= _other.m_ptr; }
             constexpr bool operator>(const Iterator& _other) { return this->m_ptr > _other.m_ptr; }
@@ -61,7 +63,7 @@ namespace Container {
             constexpr reference operator*() const { return *m_ptr; }
             constexpr pointer operator->() const { return m_ptr; }
 
-            // ...
+            // issue with const
             constexpr Const_Iterator& operator++() const {
                 ++m_ptr;
                 return *this;
@@ -80,6 +82,7 @@ namespace Container {
                 m_ptr--;
                 return _temp;
             }
+
             constexpr bool operator<(const Const_Iterator& _other) const { return this->m_ptr < _other.m_ptr; }
             constexpr bool operator<=(const Const_Iterator& _other) const { return this->m_ptr <= _other.m_ptr; }
             constexpr bool operator>(const Const_Iterator& _other) const { return this->m_ptr > _other.m_ptr; }
@@ -90,6 +93,7 @@ namespace Container {
            private:
             pointer m_ptr;
         };
+
         using iterator_category = std::random_access_iterator_tag;
         using diffrence_type = std::ptrdiff_t;
         using size_type = size_t;
@@ -99,10 +103,22 @@ namespace Container {
         using reference = _T&;
         using const_reference = const _T&;
 
-        // using reverse_Iterator = ;
-        // using const_reverse_Iterator = ;
+        // ambigious behaviour
+        // using Reverse_Iterator = std::reverse_iterator<Iterator>;
+        // using Const_Reverse_Iterator = std::reverse_iterator<Const_Iterator>;
 
-        // public member
+        Array() : _size(_S) { _data = new _T[_size]; }
+        Array(const std::initializer_list<_T>& _init) {
+            _size = _init.size();
+            _data = new _T[_size];
+            auto _index = 0;
+            for (auto _i = _init.begin(); _i != _init.end(); ++_i) {
+                _data[_index] = *_i;
+                ++_index;
+            }
+        }
+
+        // Public member goes here,
         constexpr Iterator begin() { return Iterator(_data); }
         constexpr Const_Iterator begin() const { return begin(); }
         constexpr Const_Iterator cbegin() const { return begin(); }
@@ -116,23 +132,42 @@ namespace Container {
         constexpr reference operator[](size_type _pos) { return _data[_pos]; }
         constexpr const_reference operator[](size_type _pos) const { return _data[_pos]; }
 
-        Array() : _size(_S) { _data = new _T[_size]; }
+        constexpr reference back() { return _data[_size - 1]; }
+        constexpr const_reference back() const { return _data[_size - 1]; };
+        constexpr reference front() { return _data[0]; }
+        constexpr const_reference front() const { return _data[0]; };
+
+        constexpr bool empty() { return _size == 0; }
+        constexpr bool empty() const { return _size == 0; }
+        constexpr std::size_t const size() { return _size; }
 
        private:
         _T* _data;
-        size_t _size;
+        std::size_t _size;
     };
 }  // namespace Container
 
+using std::cout;
+
 int main() {
-    Container::Array<int, 4> bb;
-    bb[0] = 10;
-    bb[1] = 20;
-    bb[2] = 30;
-    bb[3] = 40;
+    Container::Array<int, 4> bb{1, 2, 3, 4};
+    // bb[0] = 10;
+    // bb[1] = 20;
+    // bb[2] = 30;
+    // bb[3] = 40;
     for (auto e : bb) {
         std::cout << e << " ";
     }
+    cout << "\n";
+    std::cout << bb.back() << "\n";
+
+    Container::Array<std::string, 6> aa{"ab", "cd", "ef", "gh", "ij", "kl"};
+    cout << aa.size();
+
+    Container::Array<std::string, 6>::Const_Iterator it;
+    // for (it = aa.begin(); it != aa.end(); ++it) {
+    //     cout << *it << " ";
+    // }
 
     // std::cout << bb[0] << "\n";
     return 0;
@@ -142,23 +177,19 @@ int main() {
 
 /*  public members :
 
-   []    assign
-   []    at()
-   []    operator[]
-   []    back()
+   [✓]    at()
+   [✓]    operator[]
+   [✓]    back()
    [✓]    begin()
-   []    rbegin()
    [✓]    cbegin()
-   []    crbegin()
+   [✓]    empty()
+   [✓]    front()
    [✓]    end()
-   []    rend()
    [✓]    cend()
+   [✓]  size()
+   []    crbegin()
+   []    rend()
    []    crend()
+   []    rbegin()
    []    data()
-   []    empty()
-   []    front()
-   []    fill()
-   []  size()
-   []    swap()
-
 */
