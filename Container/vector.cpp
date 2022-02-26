@@ -60,6 +60,13 @@ namespace ghulam {
         constexpr size_t size() const { return __size; }
 
         /**
+         * @brief Returns the maximum number of elements the container is able to hold
+         * @param (none)
+         * @return Maximum number of elements.
+         */
+        constexpr size_t max_size() const { return 2305843009213693951; }
+
+        /**
          * @brief Returns the number of elements that the container has currently allocated space for.
          * @param (none)
          * @return Capacity of the currently allocated storage.
@@ -113,6 +120,17 @@ namespace ghulam {
         constexpr reference front() { return __data[0]; }
         constexpr reference front() const { return __data[0]; }
 
+        /**
+         * @brief Erases all elements from the container. After this call, size() returns zero.
+         * @param (none)
+         * @return (none)
+         */
+        constexpr void clear() {
+            __size = 0;
+            __capacity = 0;
+            delete[] __data;
+        }
+
         /*
         begin | cbegin | end | cend | rbegin | crbegin | rend | crend
         */
@@ -121,9 +139,23 @@ namespace ghulam {
         constexpr iterator end() { return iterator(__data + __size); }
         constexpr const_iterator cend() const { return const_iterator(__data + __size); }
 
-        /* insertion process */
-        constexpr void push_back(const __T& __value) {}  // TODO :
-        constexpr void push_back(__T&& __value) {}       // TODO :
+        /**
+         * @brief Appends the given element value to the end of the container
+         * @param value the value of the element to append
+         * @return none
+         */
+        constexpr void push_back(const __T& __value) {
+            if (__size == __capacity) doubleCapacity();
+            __data[__size] = __value;
+            ++__size;
+        }
+
+        constexpr void push_back(__T&& __value) {
+            if (__size == __capacity) doubleCapacity();
+            __data[__size] = __value;
+            ++__size;
+        }
+
         void doubleCapacity() {
             __T* new__data;
             if (__size == 0) {
@@ -138,6 +170,17 @@ namespace ghulam {
             }
             __data = new__data;
         }
+
+        // TODOS :
+        constexpr iterator insert(const_iterator __pos, const __T& __value);
+        constexpr iterator insert(const_iterator __pos, __T&& __value);
+        constexpr iterator insert(const_iterator __pos, size_t __count, const __T& __value);
+        constexpr iterator insert(const_iterator __pos, std::initializer_list<__T> __ilist);
+
+        constexpr iterator erase(const_iterator __pos);
+        constexpr iterator erase(const_iterator __first, const_iterator __last);
+
+        constexpr void pop_back();
 
        private:
         __T* __data;
