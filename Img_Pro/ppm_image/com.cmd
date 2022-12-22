@@ -1,0 +1,1 @@
+g++ main.cpp -Wall -Wextra image.hpp image.cpp -o app
