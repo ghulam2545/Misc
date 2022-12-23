@@ -118,7 +118,7 @@ namespace gh {
         if (ofs.is_open()) {
             for (size_t rows = 0; rows < HEIGHT; ++rows) {
                 for (size_t cols = 0; cols < WIDTH; ++cols) {
-                    ofs << (uint8_t)0 << (uint8_t)0 << (uint8_t)255;
+                    ofs << (uint8_t)0 << (uint8_t)0 << (uint8_t)255;  // rgb colors
                 }
             }
         } else {
@@ -130,6 +130,33 @@ namespace gh {
         return true;
     }
 
-    // bool ascii::read_ppm(const string& filename) { return true; }
+    bool binary::read_ppm(const string& filename) {
+        ifstream ifs;
+        ifs.open(filename);
+
+        vector<uint8_t> pixels{};
+        uint8_t in{};
+
+        if (ifs.is_open()) {
+            while (ifs.eof() == false) {
+                ifs >> noskipws >> in;  // noskipws == also don't skip any non-printable chars
+                pixels.push_back(in);
+            }
+        } else {
+            fprintf(stderr, "ERROR: Could not read from file \"%s\"", filename.c_str());
+            return false;
+        }
+
+        ifs.close();
+
+        // data are stored in pixels array
+        //  re-writing to defferent file
+        ofstream ofs;
+        ofs.open("gardient_out.ppm");
+        for (auto& e : pixels) ofs << e;
+        ofs.close();
+
+        return true;
+    }
 
 }

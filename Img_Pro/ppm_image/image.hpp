@@ -20,8 +20,10 @@ namespace gh {
     };
 
     struct binary {
-        // TODO: more
         bool write_ppm(const string& filename);
+        bool read_ppm(const string& filename);
+
+        // TODO: more
     };
 }
 
