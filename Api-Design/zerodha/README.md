@@ -1,4 +1,4 @@
-to generate docs --<br>
+To generate docs --<br>
 ```
 cmd: pwd
 out: D:\Java\zerodha
