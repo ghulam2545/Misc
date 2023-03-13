@@ -8,6 +8,9 @@ import zerodha.ExchangeConnector;
 
 public class Main {
     public static void main(String[] args) {
+        
+        // just to check every thing is working (no compilation error)
+        
         User maggie = new User("maggie");
         Controller.addUser("maggie", maggie);
         Stock stock = new Stock("Tesla", 3000, EXCHANGE.BSE);
