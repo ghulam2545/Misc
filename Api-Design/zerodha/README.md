@@ -1,7 +1,7 @@
 To generate docs --<br>
 ```
 cmd: pwd
-out: D:\Java\zerodha
+out: path\to\zerodha
 
 cmd: ls
 out:
@@ -13,7 +13,7 @@ README.md
 cmd: mkdir docs
 out:
 
-cmd: javadoc -d D:\Java\zerodha\docs .\zerodha\*.java
+cmd: javadoc -d path\to\zerodha\docs .\zerodha\*.java
 out: The above command generates Java documentation for all Java files in the 'zerodha' directory 
      and saves it in the 'docs' directory.
 ```
